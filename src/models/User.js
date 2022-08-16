@@ -11,6 +11,16 @@ const userSchema = new Schema ({
     password: {
         type: String,
         required: true,
+    },
+    age: {
+        type: Number,
+        min: 0,
+        max: 150,
+        required: true,
+    },
+    description: {
+        type: String,
+        maxLength: 255,
     }
 }, {
     timestamps: true,
