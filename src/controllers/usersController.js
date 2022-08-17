@@ -16,7 +16,7 @@ exports.update = async (req, res, next) => {
         const { age, description } = req.body;
 
         if (age > 150) {
-            res.status(400).send("Age must be under 150!");
+            res.status(400).send("Age must 150 or less!");
             return;
         }
 
