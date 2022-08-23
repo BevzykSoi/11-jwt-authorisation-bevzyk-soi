@@ -5,7 +5,11 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+const passport = require("passport");
+const { ExtractJwt, Strategy: JWTStrategy, Strategy } = require("passport-jwt");
+
 const apiRouter = require("./routes/apiRouter");
+const { User } = require("./models");
 
 const app = express();
 
@@ -18,6 +22,26 @@ app.use(express.json());
 app.use(volleyball);
 app.use(helmet());
 app.use(cors({ origin: '*' }));
+
+const jwtStrategy = new JWTStrategy({
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken,
+  secretOrKey: process.env.JWT_SECRET
+}, async (payload, done) => {
+  try {
+    const user = await User.findById(payload._id);
+
+    if (!user) {
+      done(null, false);
+      return;
+    }
+
+    done(null, user);
+  } catch (error) {
+    done(error);
+  }
+});
+
+passport.use(jwtStrategy);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hello, World!' });
