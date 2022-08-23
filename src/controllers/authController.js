@@ -1,7 +1,8 @@
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const { User } = require("../models");
+
+const jwt = require("../utils/jwt");
 
 exports.register = async (req, res, next) => {
     try {
@@ -25,12 +26,7 @@ exports.register = async (req, res, next) => {
             description
         });
 
-        const payload = {
-            _id: user.id,
-        };
-        const token = jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: "14d",
-        });
+        const token = jwt.generete(user.id);
 
         res.json({
             user,
@@ -60,12 +56,7 @@ exports.login = async (req, res, next) => {
             return;
         }
 
-        const payload = {
-            _id: user.id,
-        };
-        const token = jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: "14d",
-        });
+        const token = jwt.generete(user.id);
 
         res.json({
             user,
