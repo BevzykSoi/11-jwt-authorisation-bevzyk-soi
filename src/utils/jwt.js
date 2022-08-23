@@ -4,7 +4,7 @@ const defaultOptions = {
     expiresIn: "14d",
 }
 
-exports.generete = (userId) => {
+exports.generate = (userId) => {
     const payload = {
         _id: userId,
     };

@@ -17,7 +17,7 @@ exports.register = async (req, res, next) => {
             return;
         }
 
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword = await User.hashPassword(password);
 
         const user = await User.create({
             username,
@@ -26,7 +26,7 @@ exports.register = async (req, res, next) => {
             description
         });
 
-        const token = jwt.generete(user.id);
+        const token = jwt.generate(user.id);
 
         res.json({
             user,
@@ -50,13 +50,13 @@ exports.login = async (req, res, next) => {
             return;
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await user.validatePassword(password);
         if (!isPasswordValid) {
             res.status(422).send("Wrong credentials! Try again later!");
             return;
         }
 
-        const token = jwt.generete(user.id);
+        const token = jwt.generate(user.id);
 
         res.json({
             user,
