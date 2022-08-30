@@ -14,6 +14,8 @@ module.exports = new Strategy({
             done(null, false);
             return;
         }
+
+        done(null, user);
     } catch (error) {
         done(error);
     }
