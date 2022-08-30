@@ -3,7 +3,7 @@ const { Strategy } = require("passport-local");
 const { User } = require("../../models");
 
 module.exports = new Strategy({
-    usernameField: "usernmae",
+    usernameField: "username",
 }, async (username, password, done) => {
     try {
         const user = User.findOne({
