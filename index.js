@@ -6,4 +6,4 @@ if (!port) {
   return;
 }
 
-app.listen(port, () => console.log(`Server started! Port: ${port}`));
+app.listen(port, () => console.log(`Server started! Port: http://localhost:${port}`));
