@@ -6,7 +6,7 @@ module.exports = new Strategy({
     usernameField: "username",
 }, async (username, password, done) => {
     try {
-        const user = User.findOne({
+        const user = await User.findOne({
             username,
         });
 
