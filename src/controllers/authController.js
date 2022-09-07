@@ -1,7 +1,28 @@
-const bcrypt = require("bcrypt");
 const passport = require("passport");
 
 const { User } = require("../models");
+
+function login (req, res, next) {
+    passport.authenticate("local", (error, user) => {
+        if (!user || error) {
+            console.log(error);
+            req.flash("message", error ? error.message : "Email or password is wrong! Try again later!");
+            res.redirect("/login");
+            return;
+        }
+
+        req.logIn(user, (err) => {
+            if (err) {
+                console.log(error);
+                req.flash("message", err.message);
+                res.redirect("/login");
+                return;
+            }
+
+            res.redirect("/profile");
+        });
+    })(req, res, next);
+}
 
 exports.register = async (req, res, next) => {
     try {
@@ -25,7 +46,7 @@ exports.register = async (req, res, next) => {
             description
         });
 
-        res.redirect("/login");
+        login(req, res, next);
     } catch (error) {
         console.log(error);
         req.flash("message", "Username is already taken");
@@ -33,28 +54,17 @@ exports.register = async (req, res, next) => {
     }
 }
 
-exports.login = async (req, res, next) => {
-    passport.authenticate("local", (error, user) => {
-        if (!user || error) {
+exports.login = login;
+
+exports.logout = async (req, res, next) => {
+    req.logout((error) => {
+        if (error) {
             console.log(error);
-            req.flash("message", error ? error.message : "Wrong credentials! Try again later!");
-            res.redirect("/login");
+            req.flash("message", error.message);
+            res.redirect("/profile");
             return;
         }
 
-        req.logIn(user, (err) => {
-            if (err) {
-                console.log(error);
-                req.flash("message", err.message);
-                res.redirect("/login");
-                return;
-            }
-
-            res.redirect("/profile");
-        });
-    })(req, res, next);
-}
-
-exports.profile = async (req, res, next) => {
-
+        res.redirect("/");
+    });
 }
