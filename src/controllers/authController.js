@@ -1,70 +1,81 @@
-const passport = require("passport");
-
 const { User } = require("../models");
-
-function login (req, res, next) {
-    passport.authenticate("local", (error, user) => {
-        if (!user || error) {
-            console.log(error);
-            req.flash("message", error ? error.message : "Email or password is wrong! Try again later!");
-            res.redirect("/login");
-            return;
-        }
-
-        req.logIn(user, (err) => {
-            if (err) {
-                console.log(error);
-                req.flash("message", err.message);
-                res.redirect("/login");
-                return;
-            }
-
-            res.redirect("/profile");
-        });
-    })(req, res, next);
-}
+const jwt = require("../utils/jwt");
 
 exports.register = async (req, res, next) => {
-    try {
-        const { username, password, age, description } = req.body;
+  try {
+    const { username, password } = req.body;
 
-        const user = await User.findOne({
-            username,
-        });
-
-        if (user) {
-            req.flash("message", "Username is already taken");
-            res.redirect("/register");
-            return;
-        }
-
-        const hashedPassword = await User.hashPassword(password);
-        const newUser = await User.create({
-            username,
-            password: hashedPassword,
-            age,
-            description
-        });
-
-        login(req, res, next);
-    } catch (error) {
-        console.log(error);
-        req.flash("message", "Username is already taken");
-        res.redirect("/register");
-    }
-}
-
-exports.login = login;
-
-exports.logout = async (req, res, next) => {
-    req.logout((error) => {
-        if (error) {
-            console.log(error);
-            req.flash("message", error.message);
-            res.redirect("/profile");
-            return;
-        }
-
-        res.redirect("/");
+    const existingUser = await User.findOne({
+      username,
     });
-}
+
+    if (existingUser) {
+      res.status(403).send("Username is already taken");
+      return;
+    }
+
+    const hashedPassword = await User.hashPassword(password);
+
+    const user = await User.create({
+      ...req.body,
+      password: hashedPassword,
+    });
+
+    const token = jwt.generate(user._id);
+
+    res.json({
+      user,
+      token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.login = async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        res.status(422).send("No credentials!");
+        return;
+    }
+
+    const user = await User.findOne({
+      username,
+    });
+
+    if (!user) {
+      res.status(403).send("Wrong credentials!");
+      return;
+    }
+
+    const isPasswordValid = await user.validatePassword(password);
+    if (!isPasswordValid) {
+      res.status(403).send("Wrong credentials!");
+      return;
+    }
+
+    const token = jwt.generate(user._id);
+
+    res.json({
+      user,
+      token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.profile = async (req, res, next) => {
+  try {
+    if (!req.user) {
+        res.status(401).send("Unauthorized!");
+        return;
+    }
+
+    res.json(req.user);
+  } catch (error) {
+    next(error);
+  }
+};
